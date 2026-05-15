@@ -313,7 +313,7 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     }
     #endregion
 
-    #region "FilesystemInterface Implementation"
+    #region "PathResolverInterface Implementation"
     /**
      * @inheritDoc
      */
