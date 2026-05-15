@@ -39,6 +39,7 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
 {
     use EventEmitterTrait;
 
+    #region "Settings"
     /**
      * @var DateTimeImmutable The date/time when the application was started
      */
@@ -83,9 +84,9 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
      * @var array<ServiceProviderInterface> List of service providers
      */
     private array $serviceProviders = [];
+    #endregion
 
     #region "Private Methods"
-
     /**
      * Prevent the application from performing the specific action if it is already running
      *
