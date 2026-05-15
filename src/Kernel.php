@@ -185,6 +185,34 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     }
 
     /**
+     * Handle lifecycle startup
+     *
+     * @return void
+     */
+    private function handleLifecycleStartup(): void
+    {
+        $this->emit(new KernelStartingEvent($this));
+        if (is_subclass_of($this, LifecycleInterface::class)) {
+            $this->startup();
+        }
+        $this->emit(new KernelStartedEvent($this));
+    }
+
+    /**
+     * Handle lifecycle shutdown
+     *
+     * @return void
+     */
+    private function handleLifecycleShutdown(int $status, ?Throwable $t): void
+    {
+        $this->emit(new KernelStoppingEvent($this, $status, $t ?? null));
+        if (is_subclass_of($this, LifecycleInterface::class)) {
+            $this->shutdown();
+        }
+        $this->emit(new KernelStoppedEvent($this, $status, $t ?? null));
+    }
+
+    /**
      * Handles the execution of the application
      *
      * @param ExecutiveInterface $executive The executive instance
@@ -195,22 +223,14 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     {
         $t = null;
         try {
-            $this->emit(new KernelStartingEvent($this));
-            if (is_subclass_of($this, LifecycleInterface::class)) {
-                $this->startup();
-            }
-            $this->emit(new KernelStartedEvent($this));
+            $this->handleLifecycleStartup();
             $status = $executive->execute();
         } catch (Throwable $t) {
             $status = ExitStatus::EXCEPTION;
             $this->logAndEmitException($t, $logger);
         } finally {
             try {
-                $this->emit(new KernelStoppingEvent($this, $status, $t ?? null));
-                if (is_subclass_of($this, LifecycleInterface::class)) {
-                    $this->shutdown();
-                }
-                $this->emit(new KernelStoppedEvent($this, $status, $t ?? null));
+                $this->handleLifecycleShutdown($status, $t);
             } catch(Throwable $t) {
                 $this->logAndEmitException($t, $logger);
                 $status = ExitStatus::EXCEPTION;
