@@ -196,6 +196,11 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
         if (is_subclass_of($executive, LifecycleInterface::class)) {
             $executive->startup();
         }
+        foreach ($this->modules as $module) {
+            if (is_subclass_of($module, LifecycleInterface::class)) {
+                $module->startup();
+            }
+        }
         $this->emit(new KernelStartedEvent($this));
     }
 
@@ -205,6 +210,11 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     private function handleLifecycleShutdown(ExecutiveInterface $executive, int $status, ?Throwable $t): void
     {
         $this->emit(new KernelStoppingEvent($this, $status, $t ?? null));
+        foreach ($this->modules as $module) {
+            if (is_subclass_of($module, LifecycleInterface::class)) {
+                $module->shutdown();
+            }
+        }
         if (is_subclass_of($executive, LifecycleInterface::class)) {
             $executive->startup();
         }
