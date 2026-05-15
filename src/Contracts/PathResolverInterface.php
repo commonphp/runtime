@@ -22,5 +22,5 @@ interface PathResolverInterface
      * @param string ...$paths the path(s) to join)
      * @return string
      */
-    public function getPath(string ... $paths): string;
+    public function resolve(string ... $paths): string;
 }

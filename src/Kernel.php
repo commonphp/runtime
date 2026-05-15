@@ -106,7 +106,7 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
      */
     private function loadEnvironment(): void
     {
-        $envFile = $this->getPath('/.env');
+        $envFile = $this->resolve('/.env');
 
         if (is_file($envFile)) {
             if (!is_readable($envFile)) {
@@ -286,7 +286,7 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     /**
      * @inheritDoc
      */
-    public function getPath(string ...$paths): string
+    public function resolve(string ...$paths): string
     {
        return $this->getRoot() . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, array_map(function ($path) {
            return trim($path, '\\/');

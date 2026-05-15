@@ -179,7 +179,7 @@ final class KernelTest extends TestCase
         self::assertSame($root, $kernel->getRoot());
         self::assertSame(
             $root . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'item',
-            $kernel->getPath('/var/', 'cache/', '\\item'),
+            $kernel->resolve('/var/', 'cache/', '\\item'),
         );
     }
 

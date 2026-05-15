@@ -32,7 +32,7 @@ final class WorkerExecutive implements ExecutiveInterface
 
     public function execute(): int
     {
-        $queueFile = $this->paths->getPath('var', 'queue', 'jobs.json');
+        $queueFile = $this->paths->resolve('var', 'queue', 'jobs.json');
 
         $this->logger->info('Worker starting', [
             'environment' => $this->context->environment,
