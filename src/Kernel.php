@@ -186,26 +186,28 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
 
     /**
      * Handle lifecycle startup
-     *
-     * @return void
      */
-    private function handleLifecycleStartup(): void
+    private function handleLifecycleStartup(ExecutiveInterface $executive): void
     {
         $this->emit(new KernelStartingEvent($this));
         if (is_subclass_of($this, LifecycleInterface::class)) {
             $this->startup();
+        }
+        if (is_subclass_of($executive, LifecycleInterface::class)) {
+            $executive->startup();
         }
         $this->emit(new KernelStartedEvent($this));
     }
 
     /**
      * Handle lifecycle shutdown
-     *
-     * @return void
      */
-    private function handleLifecycleShutdown(int $status, ?Throwable $t): void
+    private function handleLifecycleShutdown(ExecutiveInterface $executive, int $status, ?Throwable $t): void
     {
         $this->emit(new KernelStoppingEvent($this, $status, $t ?? null));
+        if (is_subclass_of($executive, LifecycleInterface::class)) {
+            $executive->startup();
+        }
         if (is_subclass_of($this, LifecycleInterface::class)) {
             $this->shutdown();
         }
@@ -223,14 +225,14 @@ abstract class Kernel implements AppInterface, ModuleManagerInterface, PathResol
     {
         $t = null;
         try {
-            $this->handleLifecycleStartup();
+            $this->handleLifecycleStartup($executive);
             $status = $executive->execute();
         } catch (Throwable $t) {
             $status = ExitStatus::EXCEPTION;
             $this->logAndEmitException($t, $logger);
         } finally {
             try {
-                $this->handleLifecycleShutdown($status, $t);
+                $this->handleLifecycleShutdown($executive, $status, $t);
             } catch(Throwable $t) {
                 $this->logAndEmitException($t, $logger);
                 $status = ExitStatus::EXCEPTION;
