@@ -1,28 +1,35 @@
 # Contributing
 
-Thank you for helping improve CommonPHP Runtime.
+Thank you for helping improve CommonPHP packages. These libraries are intended to stay small, focused, and predictable.
 
-This package is intentionally small. Contributions should keep the runtime focused on bootstrapping, lifecycle, container wiring, modules, events, drivers, context, paths, and error handling.
+## Scope
 
-Before changing source behavior, read:
+Contributions may include bug fixes, focused tests, documentation improvements, compatibility fixes, and small enhancements that fit the package purpose. Avoid unrelated features or broad refactors.
 
-- [Architecture](docs/architecture.md)
-- [Package boundaries](docs/package-boundaries.md)
-- [Testing and QA](docs/testing.md)
+## Code Style
 
-## Local Checks
+Follow the style already used in the repository. Keep changes readable, typed where practical, and narrowly scoped. Do not commit generated files, vendor directories, lock files, or local tooling output unless the package explicitly requires them.
 
-```bash
-composer install
-vendor/bin/phpunit -c phpunit.xml.dist
-vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
-```
+## Tests
 
-The current `composer.json` also defines `composer test`, `composer cs:check`, and `composer lint`.
+Behavior changes should include or update tests. Bug fixes should include a test that would have failed before the fix when practical.
 
-## Contribution Guidelines
+## Documentation
 
-- Keep public API changes deliberate and documented.
-- Add or update tests for lifecycle, container, event, driver, and error-handling behavior.
-- Keep HTTP, routing, database, cache, security, UI, and advanced logging concerns outside this package.
-- Document behavior that downstream CommonPHP packages need to rely on.
+Public API or behavior changes should update the README or docs in the same pull request. Keep documentation concise and practical.
+
+## Bugs
+
+When reporting bugs, include the package version or commit, PHP version, a minimal reproduction, expected behavior, and actual behavior.
+
+## Features
+
+Feature suggestions should describe the use case, why it belongs in this package, and any compatibility concerns.
+
+## Pull Requests
+
+Keep pull requests focused. Explain the change, include relevant tests, and call out any public API or compatibility impact.
+
+## Compatibility
+
+CommonPHP packages may be used as building blocks. Be careful with public APIs, exception behavior, namespaces, constructor signatures, and file layout.
