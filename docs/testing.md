@@ -62,21 +62,33 @@ composer lint
 
 The script uses Unix-style `find`/`xargs`, so Windows environments may need an equivalent PowerShell command.
 
+The PHPUnit bootstrap first looks for `package/runtime/vendor/autoload.php` and then falls back to the workspace root `vendor/autoload.php`. This supports both standalone package work and monorepo development.
+
 ## Current Test Coverage
 
 The unit suite covers:
 
 - kernel execution flow;
+- initialization context defaults and collaborator injection;
+- native `AppState` configuration gates;
 - lifecycle event order;
+- native lifecycle handler startup/shutdown order;
 - runtime mutation prevention;
 - root/path resolution;
+- native path resolver behavior;
+- native module manager behavior;
 - environment and debug loading;
+- dotenv loading and environment-state fallback behavior;
 - `AppContext` creation;
 - current `ExitStatus` constants;
 - default `NullLogger` fallback;
 - configured logger service binding;
+- two-phase container creation;
+- layered container fallback;
+- execution configurators and PHP-DI decoration;
 - executive exception handling;
 - runtime error event emission;
+- support `EventEmitter` behavior;
 - event priority and listener ordering;
 - module import and duplicate import prevention;
 - service provider configuration order;
@@ -85,11 +97,4 @@ The unit suite covers:
 
 ## Manual Review Areas
 
-Some behavior should be reviewed manually before downstream packages rely on it:
-
-- whether `setEnvironment()` and `setDebugging()` should remain final runtime values when no env vars are present;
-- whether DI resolution failures should always become `ExitStatus::EXCEPTION`;
-- whether runtime error event listeners should be isolated from the original exception path;
-- whether shutdown should continue if a stopping listener fails;
-- whether `ExitStatus::EXCEPTION` should remain `2147483647`;
-- whether global helper functions should remain public Composer autoloaded functions.
+Manual review should still cover application-specific container definitions, especially when enabling PHP-DI compilation, proxies, attributes, or APCu definition cache.

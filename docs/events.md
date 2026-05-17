@@ -2,7 +2,7 @@
 
 Runtime events are object-based.
 
-The kernel uses `EventEmitterTrait`, so callers can subscribe to built-in kernel events before execution.
+The kernel uses `EventEmitterTrait`, which delegates to `CommonPHP\Runtime\Support\EventEmitter`. Callers can subscribe to built-in kernel events before execution.
 
 Related pages:
 
@@ -69,7 +69,7 @@ Higher priority listeners run first. Listeners with the same priority run in reg
 `RuntimeErrorEvent` exposes:
 
 - `public readonly Throwable $error`
-- `public readonly AppContext $context`
+- `public readonly CommonPHP\Runtime\Support\AppContext $context`
 
 ## Listener Safety
 

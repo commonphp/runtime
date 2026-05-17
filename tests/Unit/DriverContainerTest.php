@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CommonPHP\Runtime\Tests\Unit;
 
-use CommonPHP\Runtime\DriverContainer;
+use CommonPHP\Runtime\Support\DriverContainer;
 use CommonPHP\Runtime\Tests\Fixtures\Drivers\BaseOnlyDriver;
 use CommonPHP\Runtime\Tests\Fixtures\Drivers\TestDriver;
 use CommonPHP\Runtime\Tests\Fixtures\Drivers\TestDriverContract;

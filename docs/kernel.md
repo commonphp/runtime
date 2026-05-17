@@ -2,13 +2,16 @@
 
 `CommonPHP\Runtime\Kernel` is the main runtime object.
 
-It handles environment loading, root/path resolution, container creation, modules, service providers, events, logging, executives, and lifecycle handling.
+It handles initialization, environment loading, root/path resolution, container creation, modules, service providers, events, logging, executives, and lifecycle handling.
 
 Related pages:
 
 - [Getting started](getting-started.md)
+- [Initialization context](initialization-context.md)
 - [Executives](executives.md)
 - [Environment](environment.md)
+- [Container](container.md)
+- [Lifecycle](lifecycle.md)
 - [Events](events.md)
 - [Error handling](error-handling.md)
 
@@ -16,15 +19,38 @@ Related pages:
 
 The kernel:
 
-- stores start time, environment, debug flag, root path, modules, and service providers;
+- stores start time, environment, debug flag, path resolver, module manager, and service providers;
 - exposes `AppInterface`, `ModuleManagerInterface`, and `PathResolverInterface`;
-- loads `.env` using Symfony Dotenv;
-- creates the PHP-DI container;
+- accepts an optional `InitializationContext`;
+- loads `.env` using `EnvironmentLoaderInterface`;
+- creates bootstrap and execution containers through `ContainerFactoryInterface`;
 - binds core runtime services into the container;
 - runs the configured executive;
 - emits lifecycle and error events;
 - logs runtime errors when a logger is available;
 - returns an exit status from `execute()` or exits through `run()`.
+
+## Constructor
+
+Most applications can construct the kernel with no arguments:
+
+```php
+$kernel = new AppKernel();
+```
+
+Advanced callers can pass `InitializationContext`:
+
+```php
+use CommonPHP\Runtime\Support\InitializationContext;
+
+$kernel = new AppKernel(new InitializationContext(
+    root: dirname(__DIR__),
+    environment: 'dev',
+    debugging: true,
+));
+```
+
+See [initialization context](initialization-context.md) for all available options.
 
 ## Configuration API
 
@@ -38,7 +64,8 @@ $kernel
     ->setExecutive(ConsoleExecutive::class)
     ->setLogger(AppLogger::class)
     ->import(AppModule::class)
-    ->useServiceProvider(new AppServiceProvider());
+    ->useServiceProvider(new AppServiceProvider())
+    ->useExecutionConfigurator(new AppConfigurator());
 ```
 
 Once execution starts, these configuration methods throw `RuntimeException` if called:
@@ -50,7 +77,16 @@ Once execution starts, these configuration methods throw `RuntimeException` if c
 - `setRoot()`
 - `import()`
 - `useServiceProvider()`
+- `useExecutionConfigurator()`
 - `execute()` when already running
+
+Configuration is allowed again after execution stops.
+
+## State
+
+Runtime state is tracked with `CommonPHP\Runtime\Support\AppState`.
+
+Only `Created` and `Stopped` allow configuration. `Booting`, `Configuring`, `Running`, `Stopping`, and `Failed` do not.
 
 ## `execute()`
 
@@ -72,34 +108,37 @@ $kernel->run();
 
 Use this only at a final process entry point.
 
-## LifecycleInterface
+## Lifecycle
 
-If the concrete kernel implements `LifecycleInterface`, runtime calls:
+Lifecycle calls are delegated to `LifecycleHandlerInterface`.
 
-- `startup()` after `KernelStartingEvent`;
-- `shutdown()` after `KernelStoppingEvent`.
+The native handler calls startup in this order:
 
-```php
-use CommonPHP\Runtime\Contracts\LifecycleInterface;
-use CommonPHP\Runtime\Kernel;
+1. `KernelStartingEvent`
+2. kernel `startup()`
+3. executive `startup()`
+4. modules `startup()` in import order
+5. service providers `startup()` in registration order
+6. `KernelStartedEvent`
 
-final class AppKernel extends Kernel implements LifecycleInterface
-{
-    public function startup(): void
-    {
-        // Start runtime-level resources.
-    }
+Shutdown runs in this order:
 
-    public function shutdown(): void
-    {
-        // Release runtime-level resources.
-    }
-}
-```
+1. `KernelStoppingEvent`
+2. service providers `shutdown()`
+3. modules `shutdown()` in reverse import order
+4. executive `shutdown()`
+5. kernel `shutdown()`
+6. `KernelStoppedEvent`
+
+Only objects implementing `LifecycleInterface` receive `startup()` and `shutdown()`.
 
 ## Root Detection
 
-If no root is configured, the kernel uses reflection on the concrete kernel class and sets root to `dirname($kernelFile, 2)`.
+If no root is configured, the native path resolver uses reflection on the concrete kernel class and sets root to:
+
+```php
+dirname($kernelFile, 2)
+```
 
 For predictable applications, prefer explicit root configuration:
 

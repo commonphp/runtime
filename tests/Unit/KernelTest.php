@@ -4,23 +4,29 @@ declare(strict_types=1);
 
 namespace CommonPHP\Runtime\Tests\Unit;
 
-use CommonPHP\Runtime\AppContext;
+use CommonPHP\Runtime\Support\AppContext;
 use CommonPHP\Runtime\Contracts\PathResolverInterface;
 use CommonPHP\Runtime\Events\KernelStartedEvent;
 use CommonPHP\Runtime\Events\KernelStartingEvent;
 use CommonPHP\Runtime\Events\KernelStoppedEvent;
 use CommonPHP\Runtime\Events\KernelStoppingEvent;
 use CommonPHP\Runtime\Events\RuntimeErrorEvent;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use CommonPHP\Runtime\Tests\Fixtures\Executives\CallbackExecutive;
+use CommonPHP\Runtime\Tests\Fixtures\Executives\ContextAwareExecutive;
 use CommonPHP\Runtime\Tests\Fixtures\Executives\FailingExecutive;
 use CommonPHP\Runtime\Tests\Fixtures\Executives\LoggerAwareExecutive;
 use CommonPHP\Runtime\Tests\Fixtures\Executives\ProviderAwareExecutive;
 use CommonPHP\Runtime\Tests\Fixtures\Executives\SuccessfulExecutive;
+use CommonPHP\Runtime\Support\InitializationContext;
+use CommonPHP\Runtime\Tests\Fixtures\Environment\PassthroughEnvironmentLoader;
 use CommonPHP\Runtime\Tests\Fixtures\Kernels\ServiceProviderKernel;
 use CommonPHP\Runtime\Tests\Fixtures\Kernels\TestingKernel;
 use CommonPHP\Runtime\Tests\Fixtures\Logging\ArrayLogger;
+use CommonPHP\Runtime\Tests\Fixtures\Logging\DecoratedLogger;
 use CommonPHP\Runtime\Tests\Fixtures\Modules\ProviderModule;
+use CommonPHP\Runtime\Tests\Fixtures\Path\TestingPathResolver;
+use CommonPHP\Runtime\Tests\Fixtures\Providers\LoggerDecoratorConfigurator;
 use CommonPHP\Runtime\Tests\Fixtures\Providers\MarkerServiceProvider;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -236,6 +242,58 @@ final class KernelTest extends TestCase
         self::assertSame('explicit', ProviderAwareExecutive::$lastMarker->getSource());
     }
 
+    public function testInitializationContextProvidesRuntimeDefaultsAndCollaborators(): void
+    {
+        $loader = new PassthroughEnvironmentLoader();
+        $pathResolver = new TestingPathResolver('unused');
+        $root = dirname(__DIR__, 2);
+        $kernel = new TestingKernel(new InitializationContext(
+            pathResolver: $pathResolver,
+            environmentLoader: $loader,
+            root: $root . DIRECTORY_SEPARATOR,
+            environment: 'preview',
+            debugging: true,
+            loggerClass: ArrayLogger::class,
+        ));
+
+        $kernel->setExecutive(ContextAwareExecutive::class);
+
+        $status = $kernel->execute();
+
+        self::assertSame(ExitStatus::SUCCESS, $status);
+        self::assertSame(1, $loader->loadCount);
+        self::assertSame($root, $kernel->getRoot());
+        self::assertSame($root . ':var/cache', $kernel->resolve('/var', 'cache/'));
+        self::assertSame('preview', $kernel->getEnvironment());
+        self::assertTrue($kernel->isDebugging());
+        self::assertNotNull(ArrayLogger::$lastInstance);
+        self::assertSame('preview', ContextAwareExecutive::$environment?->getEnvironment());
+        self::assertTrue(ContextAwareExecutive::$environment?->isDebugging());
+        self::assertSame($pathResolver, ContextAwareExecutive::$pathResolver);
+        self::assertSame($root, ContextAwareExecutive::$context?->root);
+    }
+
+    public function testExecutionConfiguratorsCanDecorateRuntimeDefinitions(): void
+    {
+        $loader = new PassthroughEnvironmentLoader();
+        $decorator = new LoggerDecoratorConfigurator();
+        $kernel = new TestingKernel(new InitializationContext(
+            environmentLoader: $loader,
+            executionConfigurators: [$decorator],
+        ));
+
+        $kernel->setRoot(dirname(__DIR__, 2));
+        $kernel->setLogger(ArrayLogger::class);
+        $kernel->setExecutive(LoggerAwareExecutive::class);
+
+        $status = $kernel->execute();
+
+        self::assertSame(ExitStatus::SUCCESS, $status);
+        self::assertSame(1, $decorator->configureCount);
+        self::assertInstanceOf(DecoratedLogger::class, LoggerAwareExecutive::$lastLogger);
+        self::assertInstanceOf(ArrayLogger::class, LoggerAwareExecutive::$lastLogger->previous);
+    }
+
     private function newKernel(): TestingKernel
     {
         $kernel = new TestingKernel();
@@ -266,6 +324,7 @@ final class KernelTest extends TestCase
     {
         ArrayLogger::reset();
         CallbackExecutive::reset();
+        ContextAwareExecutive::reset();
         FailingExecutive::reset();
         LoggerAwareExecutive::reset();
         ProviderAwareExecutive::reset();

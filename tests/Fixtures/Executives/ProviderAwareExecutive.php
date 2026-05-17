@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CommonPHP\Runtime\Tests\Fixtures\Executives;
 
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use CommonPHP\Runtime\Tests\Fixtures\Services\MarkerContract;
 
 final class ProviderAwareExecutive implements ExecutiveInterface

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CommonPHP\Runtime\Tests\Unit;
 
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use PHPUnit\Framework\TestCase;
 
 final class ExitStatusTest extends TestCase

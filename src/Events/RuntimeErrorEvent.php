@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CommonPHP\Runtime\Events;
 
-use CommonPHP\Runtime\AppContext;
+use CommonPHP\Runtime\Support\AppContext;
 use CommonPHP\Runtime\Contracts\AbstractEvent;
 use Throwable;
 

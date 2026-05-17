@@ -5,9 +5,10 @@ CommonPHP Runtime is the small bootstrapping layer for CommonPHP applications.
 Its job is to:
 
 - hold application runtime state;
+- accept optional initialization collaborators;
 - load environment settings;
 - resolve root-relative paths;
-- build the PHP-DI container;
+- build bootstrap and execution PHP-DI containers;
 - import modules and configure service providers;
 - run one executive;
 - emit lifecycle and error events;
@@ -19,32 +20,36 @@ It should not become a full-stack framework.
 Related pages:
 
 - [Package boundaries](package-boundaries.md)
+- [Initialization context](initialization-context.md)
 - [Kernel](kernel.md)
 - [Executives](executives.md)
 - [Container](container.md)
+- [Lifecycle](lifecycle.md)
 
 ## Runtime Flow
 
 The current `Kernel::execute()` flow is:
 
-1. Set `startedAt` to a new `DateTimeImmutable`.
-2. Prevent nested execution.
-3. Mark the kernel as running.
-4. Register built-in event classes.
-5. Ensure an executive class has been set.
-6. Default the logger class to `Psr\Log\NullLogger` if none was set.
-7. Load `.env` and environment variables.
-8. Build the PHP-DI container.
-9. Resolve `LoggerInterface` and `ExecutiveInterface` from the container.
-10. Emit `KernelStartingEvent`.
-11. Call `startup()` if the kernel implements `LifecycleInterface`.
-12. Emit `KernelStartedEvent`.
-13. Call `ExecutiveInterface::execute()`.
-14. On executive failure, emit `RuntimeErrorEvent`, log with PSR-3, and use `ExitStatus::EXCEPTION`.
-15. Emit `KernelStoppingEvent`.
-16. Call `shutdown()` if the kernel implements `LifecycleInterface`.
-17. Emit `KernelStoppedEvent`.
-18. Mark the kernel as not running.
+1. Ensure the kernel has been initialized.
+2. Set `startedAt` to a new `DateTimeImmutable`.
+3. Prevent nested execution.
+4. Move the kernel into `AppState::Booting`.
+5. Register built-in event classes.
+6. Ensure an executive class has been set.
+7. Load `.env` and environment variables through `EnvironmentLoaderInterface`.
+8. Create a `ContainerDefinitionPlan` with runtime base definitions and the configured executive definition.
+9. Build the bootstrap container.
+10. Move the kernel into `AppState::Configuring`.
+11. Build the execution container, wrapping the bootstrap container as fallback.
+12. Apply container configurators from the kernel, modules, explicit service providers, and execution configurators.
+13. Resolve `LoggerInterface` and `ExecutiveInterface` from the execution container.
+14. Run startup lifecycle through `LifecycleHandlerInterface`.
+15. Move the kernel into `AppState::Running`.
+16. Call `ExecutiveInterface::execute()`.
+17. On executive or lifecycle failure, emit `RuntimeErrorEvent`, log with PSR-3 when a logger is available, and use `ExitStatus::EXCEPTION`.
+18. Move the kernel into `AppState::Stopping`.
+19. Run shutdown lifecycle through `LifecycleHandlerInterface`.
+20. Move the kernel into `AppState::Stopped`.
 
 ## Design Philosophy
 
@@ -63,9 +68,14 @@ That means it should stay:
 | Object | Responsibility |
 | --- | --- |
 | Kernel | Bootstraps and executes the application |
+| InitializationContext | Supplies optional kernel collaborators and starting state |
+| EnvironmentLoader | Loads dotenv/process environment into `EnvironmentState` |
+| ContainerFactory | Builds bootstrap and execution containers |
+| LayeredContainer | Lets the execution container fall back to bootstrap entries |
+| LifecycleHandler | Coordinates startup, shutdown, and lifecycle events |
 | Executive | Runs the selected runtime mode |
 | Module | Lightweight registration object |
-| Service provider | Adds PHP-DI definitions before build |
+| Service provider | Adds PHP-DI definitions before execution container build |
 | Event | Carries lifecycle or runtime information |
 | Driver | Subsystem-owned implementation strategy |
 | AppContext | Readonly snapshot of runtime context |

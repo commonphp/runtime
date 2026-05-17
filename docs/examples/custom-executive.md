@@ -15,10 +15,10 @@ declare(strict_types=1);
 
 namespace App;
 
-use CommonPHP\Runtime\AppContext;
+use CommonPHP\Runtime\Support\AppContext;
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
 use CommonPHP\Runtime\Contracts\PathResolverInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use Psr\Log\LoggerInterface;
 
 final class WorkerExecutive implements ExecutiveInterface

@@ -2,7 +2,7 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     bootstrap="tests/bootstrap.php"
-    cacheDirectory=".phpunit.cache"
+    cacheDirectory="build/phpunit"
     colors="true"
     beStrictAboutOutputDuringTests="true"
     failOnDeprecation="true"

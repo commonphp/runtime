@@ -11,7 +11,7 @@ Related pages:
 
 ```php
 use CommonPHP\Runtime\Contracts\DriverInterface;
-use CommonPHP\Runtime\DriverContainer;
+use CommonPHP\Runtime\Support\DriverContainer;
 
 interface MailerDriver extends DriverInterface
 {

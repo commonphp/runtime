@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace App;
 
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use CommonPHP\Runtime\Kernel;
 
 final class AppKernel extends Kernel

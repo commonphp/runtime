@@ -1,25 +1,44 @@
 # Environment
 
-Runtime loads environment state during `Kernel::execute()`.
+Runtime loads environment state during `Kernel::execute()` through `EnvironmentLoaderInterface`.
 
 Related pages:
 
 - [Kernel](kernel.md)
+- [Initialization context](initialization-context.md)
 - [AppContext](app-context.md)
 - [Path resolution](path-resolution.md)
 
-## Dotenv Loading
+## EnvironmentState
 
-The kernel looks for `.env` at:
+The kernel stores environment and debug values in `CommonPHP\Runtime\Support\EnvironmentState`.
+
+Initial values come from `InitializationContext` or from the native defaults:
 
 ```php
-$kernel->getPath('/.env')
+environment: 'prod'
+debugging: false
+```
+
+Before execution, callers may still use:
+
+```php
+$kernel->setEnvironment('dev');
+$kernel->setDebugging(true);
+```
+
+## Dotenv Loading
+
+The native loader looks for `.env` at:
+
+```php
+$pathResolver->resolve('/.env')
 ```
 
 If the file exists and is readable, runtime calls:
 
 ```php
-new Symfony\Component\Dotenv\Dotenv()->bootEnv($envFile, $this->environment);
+new Symfony\Component\Dotenv\Dotenv()->bootEnv($envFile, $state->getEnvironment());
 ```
 
 If the file exists but is not readable, runtime throws `RuntimeException('Access denied to environment file')`, emits a runtime error event, and returns `ExitStatus::EXCEPTION`.
@@ -33,7 +52,7 @@ After dotenv loading, runtime resolves environment from:
 1. `$_SERVER['APP_ENV']`
 2. `$_ENV['APP_ENV']`
 3. `getenv('APP_ENV')`
-4. `'prod'`
+4. current `EnvironmentState`
 
 The result is stored in `Kernel::getEnvironment()` and `AppContext::$environment`.
 
@@ -44,7 +63,7 @@ Runtime resolves debug mode from:
 1. `$_SERVER['APP_DEBUG']`
 2. `$_ENV['APP_DEBUG']`
 3. `getenv('APP_DEBUG')`
-4. `'0'`
+4. current `EnvironmentState`
 
 It is converted with `filter_var($debug, FILTER_VALIDATE_BOOLEAN)`.
 
@@ -55,30 +74,18 @@ $kernel->isDebugging();
 $kernel->getContext()->debugging;
 ```
 
-## setEnvironment and setDebugging
+Unset process variables are ignored. This means values configured with `InitializationContext`, `setEnvironment()`, or `setDebugging()` are preserved when no `.env` or process value exists.
 
-Before execution, callers may use:
+## Replacing Environment Loading
 
-```php
-$kernel->setEnvironment('dev');
-$kernel->setDebugging(true);
-```
-
-Current source behavior: `loadEnvironment()` later resolves values from `APP_ENV` and `APP_DEBUG` and falls back to `'prod'` and `'0'`. Do not rely on `setEnvironment()` or `setDebugging()` alone as the final runtime values unless matching environment variables or `.env` values are present.
-
-## Recommended Usage
-
-For application entry points:
+Advanced applications can provide their own loader:
 
 ```php
-$kernel
-    ->setRoot(dirname(__DIR__))
-    ->setExecutive(ConsoleExecutive::class);
+use CommonPHP\Runtime\Support\InitializationContext;
+
+$kernel = new AppKernel(new InitializationContext(
+    environmentLoader: new AppEnvironmentLoader(),
+));
 ```
 
-Then put environment values in `.env` or process environment:
-
-```dotenv
-APP_ENV=dev
-APP_DEBUG=1
-```
+Custom loaders should mutate and return the provided `EnvironmentState`.

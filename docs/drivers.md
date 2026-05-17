@@ -41,7 +41,7 @@ interface CacheDriverInterface extends DriverInterface
 Example:
 
 ```php
-use CommonPHP\Runtime\DriverContainer;
+use CommonPHP\Runtime\Support\DriverContainer;
 
 $drivers = new DriverContainer(CacheDriverInterface::class);
 

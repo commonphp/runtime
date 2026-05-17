@@ -8,7 +8,7 @@
 
 CommonPHP Runtime is the bootstrap/runtime foundation for CommonPHP applications. It provides the small layer that starts an application, creates the runtime container, runs an executive, emits lifecycle events, and returns or exits with an integer status code.
 
-The package handles kernel execution, dotenv loading, modules, service providers, events, drivers, logging access, path resolution, runtime context, and runtime error handling.
+The package handles kernel execution, initialization context, dotenv loading, two-phase container creation, modules, service providers, events, drivers, logging access, path resolution, runtime context, and runtime error handling.
 
 ## What It Is Not
 
@@ -21,7 +21,10 @@ See [package boundaries](docs/package-boundaries.md) for what belongs here and w
 - Abstract `Kernel` for application boot and execution.
 - `ExecutiveInterface` for web, console, worker, or custom runtime modes.
 - Dotenv loading with `APP_ENV` and `APP_DEBUG` support.
-- PHP-DI container creation through kernel, module, and explicit service providers.
+- PHP-DI bootstrap and execution containers with a layered wrapper.
+- Optional `InitializationContext` for replacing runtime collaborators before boot.
+- Container attributes, compilation, proxy, and definition-cache options through `ContainerOptions`.
+- Container configuration through kernel, module, explicit service providers, and execution configurators.
 - Object-based lifecycle and runtime error events.
 - PSR-3 logger binding with `NullLogger` fallback.
 - Immutable `AppContext` snapshot for services.
@@ -56,7 +59,7 @@ declare(strict_types=1);
 namespace App;
 
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use CommonPHP\Runtime\Kernel;
 
 final class AppKernel extends Kernel
@@ -91,6 +94,10 @@ Use `execute()` when you want an exit status back. Use `run()` when the kernel s
 
 The [kernel](docs/kernel.md) is the main runtime object. It loads environment state, resolves paths, creates the PHP-DI container, imports modules, configures service providers, emits events, runs the executive, and handles shutdown.
 
+### Initialization Context
+
+[Initialization context](docs/initialization-context.md) lets advanced callers provide runtime collaborators such as a path resolver, module manager, environment loader, container factory, lifecycle handler, event emitter, logger class, container options, and initial environment state.
+
 ### Executives
 
 [Executives](docs/executives.md) are runtime modes. A web executive, console executive, worker executive, or test executive can all implement the same `ExecutiveInterface`.
@@ -102,6 +109,10 @@ The [kernel](docs/kernel.md) is the main runtime object. It loads environment st
 ### Service Providers
 
 [Service providers](docs/service-providers.md) add definitions to the PHP-DI `ContainerBuilder`.
+
+### Lifecycle
+
+[Lifecycle](docs/lifecycle.md) describes startup and shutdown ordering for kernels, executives, modules, service providers, and lifecycle events.
 
 ### Events
 
@@ -137,7 +148,9 @@ Key pages:
 - [Architecture](docs/architecture.md)
 - [Package boundaries](docs/package-boundaries.md)
 - [Kernel](docs/kernel.md)
+- [Initialization context](docs/initialization-context.md)
 - [Container](docs/container.md)
+- [Lifecycle](docs/lifecycle.md)
 - [Testing and QA](docs/testing.md)
 
 ## Examples

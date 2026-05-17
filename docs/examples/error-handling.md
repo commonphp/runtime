@@ -32,7 +32,7 @@ $status = $kernel->execute();
 The returned status will be:
 
 ```php
-CommonPHP\Runtime\ExitStatus::EXCEPTION;
+CommonPHP\Runtime\Support\ExitStatus::EXCEPTION;
 ```
 
 Listener exceptions are not isolated by the current event emitter. Keep runtime error listeners defensive.

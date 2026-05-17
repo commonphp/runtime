@@ -29,7 +29,7 @@ $kernel->setLogger(AppLogger::class);
 
 ```php
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use Psr\Log\LoggerInterface;
 
 final class ConsoleExecutive implements ExecutiveInterface

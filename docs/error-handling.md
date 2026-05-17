@@ -13,7 +13,7 @@ Related pages:
 `ExitStatus` currently defines:
 
 ```php
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 
 ExitStatus::SUCCESS;   // 0
 ExitStatus::EXCEPTION; // 2147483647
@@ -36,7 +36,7 @@ If `ExecutiveInterface::execute()` throws:
 
 ```php
 public readonly Throwable $error;
-public readonly AppContext $context;
+public readonly CommonPHP\Runtime\Support\AppContext $context;
 ```
 
 Subscribe before execution:

@@ -6,7 +6,7 @@ namespace CommonPHP\Runtime\Tests\Fixtures\Executives;
 
 use Closure;
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 
 final class CallbackExecutive implements ExecutiveInterface
 {

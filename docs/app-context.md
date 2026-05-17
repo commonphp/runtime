@@ -1,6 +1,6 @@
 # AppContext
 
-`CommonPHP\Runtime\AppContext` is a readonly snapshot of runtime context.
+`CommonPHP\Runtime\Support\AppContext` is a readonly snapshot of runtime context.
 
 Related pages:
 
@@ -12,7 +12,7 @@ Related pages:
 ## Properties
 
 ```php
-final readonly class AppContext
+readonly class AppContext
 {
     public DateTimeImmutable $startedAt;
     public string $environment;
@@ -27,7 +27,7 @@ The kernel creates context with:
 $kernel->getContext();
 ```
 
-The container also binds `AppContext::class` to a factory that returns the current kernel context.
+The container binds `CommonPHP\Runtime\Support\AppContext::class` to a factory that returns the current kernel context.
 
 ## Why Use AppContext
 
@@ -43,7 +43,7 @@ This keeps services easier to test and avoids hidden coupling to runtime control
 ## Example
 
 ```php
-use CommonPHP\Runtime\AppContext;
+use CommonPHP\Runtime\Support\AppContext;
 
 final class ReportPathFactory
 {

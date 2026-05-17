@@ -17,11 +17,11 @@ interface PathResolverInterface
 {
     public function getRoot(): string;
 
-    public function getPath(string ...$paths): string;
+    public function resolve(string ...$paths): string;
 }
 ```
 
-The kernel implements this contract.
+The kernel implements this contract by delegating to its configured resolver. The default resolver is `CommonPHP\Runtime\Support\NativePathResolver`.
 
 ## Root Path
 
@@ -39,12 +39,12 @@ dirname($class->getFileName(), 2)
 
 For predictable package and application behavior, prefer explicit root configuration.
 
-## getPath
+## resolve
 
-`getPath()` trims leading and trailing slash characters from each path segment and joins them with `DIRECTORY_SEPARATOR`.
+`resolve()` trims leading and trailing slash characters from each path segment and joins them with `DIRECTORY_SEPARATOR`.
 
 ```php
-$cachePath = $kernel->getPath('var', 'cache');
+$cachePath = $kernel->resolve('var', 'cache');
 ```
 
 This returns:

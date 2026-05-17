@@ -13,10 +13,12 @@ Runtime should remain small and dependable. Other packages should provide HTTP, 
 ## Runtime Concepts
 
 - [Kernel](kernel.md)
+- [Initialization context](initialization-context.md)
 - [Executives](executives.md)
 - [Modules](modules.md)
 - [Service providers](service-providers.md)
 - [Container](container.md)
+- [Lifecycle](lifecycle.md)
 - [Events](events.md)
 - [Drivers](drivers.md)
 - [Logging](logging.md)
@@ -46,16 +48,38 @@ Runtime should remain small and dependable. Other packages should provide HTTP, 
 Core classes:
 
 - `CommonPHP\Runtime\Kernel`
-- `CommonPHP\Runtime\AppContext`
-- `CommonPHP\Runtime\DriverContainer`
-- `CommonPHP\Runtime\DriverDefinition`
-- `CommonPHP\Runtime\ExitStatus`
+
+Support classes:
+
+- `CommonPHP\Runtime\Support\AppContext`
+- `CommonPHP\Runtime\Support\AppState`
+- `CommonPHP\Runtime\Support\ContainerBuildContext`
+- `CommonPHP\Runtime\Support\ContainerDefinitionPlan`
+- `CommonPHP\Runtime\Support\ContainerFactory`
+- `CommonPHP\Runtime\Support\ContainerOptions`
+- `CommonPHP\Runtime\Support\ContainerPhase`
+- `CommonPHP\Runtime\Support\DriverContainer`
+- `CommonPHP\Runtime\Support\DriverDefinition`
+- `CommonPHP\Runtime\Support\EnvironmentLoader`
+- `CommonPHP\Runtime\Support\EnvironmentState`
+- `CommonPHP\Runtime\Support\EventEmitter`
+- `CommonPHP\Runtime\Support\ExitStatus`
+- `CommonPHP\Runtime\Support\InitializationContext`
+- `CommonPHP\Runtime\Support\LayeredContainer`
+- `CommonPHP\Runtime\Support\LifecycleHandler`
+- `CommonPHP\Runtime\Support\NativeModuleManager`
+- `CommonPHP\Runtime\Support\NativePathResolver`
 
 Contracts and traits:
 
 - `CommonPHP\Runtime\Contracts\AppInterface`
+- `CommonPHP\Runtime\Contracts\ContainerConfiguratorInterface`
+- `CommonPHP\Runtime\Contracts\ContainerFactoryInterface`
 - `CommonPHP\Runtime\Contracts\ExecutiveInterface`
+- `CommonPHP\Runtime\Contracts\EnvironmentLoaderInterface`
+- `CommonPHP\Runtime\Contracts\EventEmitterInterface`
 - `CommonPHP\Runtime\Contracts\LifecycleInterface`
+- `CommonPHP\Runtime\Contracts\LifecycleHandlerInterface`
 - `CommonPHP\Runtime\Contracts\ModuleInterface`
 - `CommonPHP\Runtime\Contracts\ModuleManagerInterface`
 - `CommonPHP\Runtime\Contracts\ServiceProviderInterface`

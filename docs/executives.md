@@ -27,7 +27,7 @@ interface ExecutiveInterface
 
 ```php
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 
 final class ConsoleExecutive implements ExecutiveInterface
 {
@@ -65,9 +65,9 @@ Those packages are outside this repository. Runtime only needs the shared `execu
 Runtime binds `ExecutiveInterface` to an autowired definition for the configured executive class. Constructor dependencies may be resolved by PHP-DI if they are available in the runtime container.
 
 ```php
-use CommonPHP\Runtime\AppContext;
+use CommonPHP\Runtime\Support\AppContext;
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 use Psr\Log\LoggerInterface;
 
 final class WorkerExecutive implements ExecutiveInterface

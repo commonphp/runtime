@@ -49,7 +49,7 @@ declare(strict_types=1);
 namespace App;
 
 use CommonPHP\Runtime\Contracts\ExecutiveInterface;
-use CommonPHP\Runtime\ExitStatus;
+use CommonPHP\Runtime\Support\ExitStatus;
 
 final class ConsoleExecutive implements ExecutiveInterface
 {
@@ -124,7 +124,7 @@ Modules are instantiated without constructor arguments. Service providers receiv
 
 ## Current Behavior Notes
 
-- Runtime reads `.env` from `$kernel->getPath('/.env')` if it exists.
-- Environment values are resolved from `$_SERVER`, `$_ENV`, `getenv()`, then default values.
-- The runtime container is built once during `execute()`.
+- Runtime reads `.env` from `$kernel->resolve('/.env')` if it exists.
+- Environment values are resolved from `$_SERVER`, `$_ENV`, `getenv()`, then initialized defaults.
+- Runtime builds a bootstrap container and then an execution container during `execute()`.
 - Most runtime configuration methods are blocked while the kernel is running.

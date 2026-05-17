@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 namespace CommonPHP\Runtime\Contracts;
 
-use CommonPHP\Runtime\DriverContainer;
+use CommonPHP\Runtime\Support\DriverContainer;
 use RuntimeException;
 
 /**

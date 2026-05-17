@@ -1,23 +1,34 @@
 # Service Providers
 
-Service providers contribute PHP-DI definitions before the container is built.
+Service providers contribute PHP-DI definitions before the execution container is built.
 
 Related pages:
 
 - [Container](container.md)
 - [Modules](modules.md)
 - [Kernel](kernel.md)
+- [Lifecycle](lifecycle.md)
 
-## Contract
+## Contracts
+
+Runtime uses `ContainerConfiguratorInterface` as the general container configuration contract:
 
 ```php
 namespace CommonPHP\Runtime\Contracts;
 
 use DI\ContainerBuilder;
 
-interface ServiceProviderInterface
+interface ContainerConfiguratorInterface
 {
     public function configure(ContainerBuilder $builder): void;
+}
+```
+
+`ServiceProviderInterface` extends it as the named application/provider concept:
+
+```php
+interface ServiceProviderInterface extends ContainerConfiguratorInterface
+{
 }
 ```
 
@@ -47,15 +58,26 @@ $kernel->useServiceProvider(new AppServiceProvider());
 
 ## Provider Ordering
 
-The current kernel applies providers in this order:
+The current kernel applies configurators in this order:
 
-1. The kernel itself, if it implements `ServiceProviderInterface`.
-2. Imported modules, in import order, if they implement `ServiceProviderInterface`.
+1. The kernel itself, if it implements `ContainerConfiguratorInterface`.
+2. Imported modules, in import order, if they implement `ContainerConfiguratorInterface`.
 3. Explicit providers added through `useServiceProvider()`, in registration order.
+4. Execution configurators from `InitializationContext`.
+5. Execution configurators added through `useExecutionConfigurator()`.
 
 Later definitions may override earlier definitions according to PHP-DI behavior.
 
-Providers are applied when the container is created during `execute()`. If an application calls `execute()` again after it returns, the container is built again and providers are configured again.
+Providers are applied when the execution container is created during `execute()`. If an application calls `execute()` again after it returns, the containers are rebuilt and providers are configured again.
+
+## Lifecycle
+
+If a provider also implements `LifecycleInterface`, the native lifecycle handler calls:
+
+- `startup()` after modules have started;
+- `shutdown()` before modules, executive, and kernel shutdown.
+
+Keep provider lifecycle work light. Prefer lazy container services for expensive resources.
 
 ## What Belongs in Providers
 
